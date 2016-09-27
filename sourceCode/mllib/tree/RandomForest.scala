@@ -36,9 +36,7 @@ import org.apache.spark.util.Utils
 
 
 /**
- * A class that implements a [[http://en.wikipedia.org/wiki/Random_forest  Random Forest]]
- * learning algorithm for classification and regression.
- * It supports both continuous and categorical features.
+ * 定一个类，用于实现随机森林学习算法，可适用于分类与回归，支持连续与离散特征
  *
  * The settings for featureSubsetStrategy are based on the following references:
  *  - log2: tested in Breiman (2001)
@@ -84,14 +82,16 @@ private class RandomForest (
     s" (0.0-1.0], [1-n].")
 
   /**
-   * Method to train a decision tree model over an RDD
+   * 在输入RDD上出训练随机森林
    *
    * @param input Training data: RDD of [[org.apache.spark.mllib.regression.LabeledPoint]].
    * @return RandomForestModel that can be used for prediction.
    */
   def run(input: RDD[LabeledPoint]): RandomForestModel = {
+    // 使用NewRandomForest训练出森林，其中NewRandomForest是在ml.tree.impl中实现
     val trees: Array[NewDTModel] = NewRandomForest.run(input.map(_.asML), strategy, numTrees,
       featureSubsetStrategy, seed.toLong, None)
+    // 新建随机森林模型
     new RandomForestModel(strategy.algo, trees.map(_.toOld))
   }
 

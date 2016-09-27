@@ -32,8 +32,8 @@ import org.apache.spark.rdd.RDD
 
 
 /**
- * A class which implements a decision tree learning algorithm for classification and regression.
- * It supports both continuous and categorical features.
+ * 定义一个类，用于实现决策树学习算法，可适用于分类与回归，支持连续和离散特征
+ *
  *
  * @param strategy The configuration parameters for the tree algorithm which specify the type
  *                 of decision tree (classification or regression), feature type (continuous,
@@ -55,15 +55,19 @@ class DecisionTree private[spark] (private val strategy: Strategy, private val s
   strategy.assertValid()
 
   /**
-   * Method to train a decision tree model over an RDD
+   * 在输入RDD上训练决策树模型
    *
    * @param input Training data: RDD of [[org.apache.spark.mllib.regression.LabeledPoint]].
    * @return DecisionTreeModel that can be used for prediction.
    */
   @Since("1.2.0")
+  //
   def run(input: RDD[LabeledPoint]): DecisionTreeModel = {
+    // 新建随机森林模型，森林中树的数目为1,特征子集的选择策略是"all"
     val rf = new RandomForest(strategy, numTrees = 1, featureSubsetStrategy = "all", seed = seed)
+    // 训练随机森林模型
     val rfModel = rf.run(input)
+    // 将随机森林的第一个决策树返回，作为决策树模型
     rfModel.trees(0)
   }
 }
@@ -149,8 +153,7 @@ object DecisionTree extends Serializable with Logging {
   }
 
   /**
-   * Method to train a decision tree model.
-   * The method supports binary and multiclass classification and regression.
+   * 训练决策树模型，支持二分类，多分类和回归
    *
    * Note: Using [[org.apache.spark.mllib.tree.DecisionTree$#trainClassifier]]
    *       and [[org.apache.spark.mllib.tree.DecisionTree$#trainRegressor]]
@@ -181,13 +184,15 @@ object DecisionTree extends Serializable with Logging {
       maxBins: Int,
       quantileCalculationStrategy: QuantileStrategy,
       categoricalFeaturesInfo: Map[Int, Int]): DecisionTreeModel = {
+    // 将入惨封装为strategy
     val strategy = new Strategy(algo, impurity, maxDepth, numClasses, maxBins,
       quantileCalculationStrategy, categoricalFeaturesInfo)
+    // 返回新建的决策树模型
     new DecisionTree(strategy).run(input)
   }
 
   /**
-   * Method to train a decision tree model for binary or multiclass classification.
+   * 用于训练二分类或者多分类的决策树模型
    *
    * @param input Training dataset: RDD of [[org.apache.spark.mllib.regression.LabeledPoint]].
    *              Labels should take values {0, 1, ..., numClasses-1}.
@@ -213,6 +218,7 @@ object DecisionTree extends Serializable with Logging {
       maxDepth: Int,
       maxBins: Int): DecisionTreeModel = {
     val impurityType = Impurities.fromString(impurity)
+    //调用train方法
     train(input, Classification, impurityType, maxDepth, numClasses, maxBins, Sort,
       categoricalFeaturesInfo)
   }
